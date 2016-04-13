@@ -1,39 +1,62 @@
 package com.example.dilkom_hak.assignment4;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
+import com.example.dilkom_hak.assignment4.Modules.DirectionFinder;
+import com.example.dilkom_hak.assignment4.Modules.DirectionFinderListener;
+import com.example.dilkom_hak.assignment4.Modules.Route;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
+//server key for direction api: AIzaSyApwxIXVb9XGS9FGCid8olKQ0ST_Uy865s
+//android key for maps api : AIzaSyAqsJXq-Ia-zbVqlhRIEfEMDFr7Egq-Is4
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+//example route: https://maps.googleapis.com/maps/api/directions/json?origin=Eskisehir&destination=Bursa&key=AIzaSyApwxIXVb9XGS9FGCid8olKQ0ST_Uy865s
+//example video https://www.youtube.com/watch?v=CCZPUeY94MU
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,DirectionFinderListener {
 
     private static final String TAG = "HAKKE";
     private GoogleMap mMap;
     Context context;
+    Button btnFindPath;
+    private EditText etOrigin;
+    private EditText etDestination;
+    private List<Marker> originMarkers = new ArrayList<>();
+    private List<Marker> destinationMarkers = new ArrayList<>();
+    private List<Polyline> polylinePaths = new ArrayList<>();
+    private ProgressDialog progressDialog;
 
+
+    //IKI EYLUL latitude : 39.814618    , longitude : 30.536218
+    double ikiEylulLatitude = 39.814618 , ikiEylulLongitude  = 30.536218;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +66,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        btnFindPath = (Button) findViewById(R.id.btnOpenMap);
+        btnFindPath.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendRequest();
+            }
+        });
+
     }
+
+    private void sendRequest() {
+        String origin = "BURSA";
+        String destination = "Eskişehir";
+        try{
+            new DirectionFinder(this, origin,destination).execute();
+        }catch(UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+
+
 
     public void onSearch(View view) {
         String location = "location"; //et.getText().toString();
@@ -109,12 +157,94 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Location location = locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria, false));
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude) , 10));
+        LatLng currentLocation = new LatLng(latitude,longitude);
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,13));
+
+        addMarkerIkıEylul();
+
+        //addPolylineCurrentToIkıEylul(currentLocation,addMarkerIkıEylul());
 
 
 
     }
 
+    private void addPolylineCurrentToIkıEylul(LatLng currentLocation, LatLng ikiEylulLocation) {
+
+        mMap
+                .addPolyline((new PolylineOptions())
+                        .add(currentLocation, ikiEylulLocation).width(3).color(Color.BLUE)
+                        .geodesic(true));
+    }
+
+    private LatLng addMarkerIkıEylul()
+    {
+        LatLng ikiEylulPosition = new LatLng(ikiEylulLatitude,ikiEylulLongitude);
+        mMap.addMarker(
+                new MarkerOptions()
+                .title("İki Eylül Kampüsü")
+                .snippet("Orda bi okul var uzakta, o okul bizim okulumuuzzdur..")
+                .position(ikiEylulPosition)
+        );
+
+        return ikiEylulPosition;
+    }//end method addMarkerIkıEylul
 
 
+    @Override
+    public void onDirectionFinderStart() {
+        progressDialog = ProgressDialog.show(this, "Please wait.",
+                "Finding direction..!", true);
+
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
+                marker.remove();
+            }
+        }
+
+        if (destinationMarkers != null) {
+            for (Marker marker : destinationMarkers) {
+                marker.remove();
+            }
+        }
+
+        if (polylinePaths != null) {
+            for (Polyline polyline:polylinePaths ) {
+                polyline.remove();
+            }
+        }
+    }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> routes) {
+        progressDialog.dismiss();
+        polylinePaths = new ArrayList<>();
+        originMarkers = new ArrayList<>();
+        destinationMarkers = new ArrayList<>();
+
+        for (Route route : routes) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
+            //((TextView) findViewById(R.id.tvDuration)).setText(route.duration.text);
+            //((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
+                    .title(route.startAddress)
+                    .position(route.startLocation)));
+            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
+                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
+                    .title(route.endAddress)
+                    .position(route.endLocation)));
+
+            PolylineOptions polylineOptions = new PolylineOptions().
+                    geodesic(true).
+                    color(Color.BLUE).
+                    width(10);
+
+            for (int i = 0; i < route.points.size(); i++)
+                polylineOptions.add(route.points.get(i));
+
+            polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+    }
 }
