@@ -1,6 +1,7 @@
-package com.example.dilkom_hak.assignment4.Modules;
+package Modules;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -19,12 +20,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Mai Thanh Hiep on 4/3/2016.
- */
 public class DirectionFinder {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
-    private static final String GOOGLE_API_KEY = "AIzaSyDnwLF2-WfK8cVZt9OoDYJ9Y8kspXhEHfI";
+    private static final String GOOGLE_SERVER_KEY = "AIzaSyApwxIXVb9XGS9FGCid8olKQ0ST_Uy865s";
     private DirectionFinderListener listener;
     private String origin;
     private String destination;
@@ -43,8 +41,10 @@ public class DirectionFinder {
     private String createUrl() throws UnsupportedEncodingException {
         String urlOrigin = URLEncoder.encode(origin, "utf-8");
         String urlDestination = URLEncoder.encode(destination, "utf-8");
+        //Log.d("HAKKE","url:encoded:> " + DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY + "&sensor=true");
+        Log.d("HAKKE","url:normal:> " + DIRECTION_URL_API + "origin=" + origin + "&destination=" + destination + "&key=" + GOOGLE_SERVER_KEY + "&sensor=true");
 
-        return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
+        return DIRECTION_URL_API + "origin=" + origin + "&destination=" + destination + "&key=" + GOOGLE_SERVER_KEY + "&sensor=true";
     }
 
     private class DownloadRawData extends AsyncTask<String, Void, String> {
@@ -63,6 +63,7 @@ public class DirectionFinder {
                     buffer.append(line + "\n");
                 }
 
+                Log.d("HAKKE", "doInBackground sucess");
                 return buffer.toString();
 
             } catch (MalformedURLException e) {
@@ -76,6 +77,8 @@ public class DirectionFinder {
         @Override
         protected void onPostExecute(String res) {
             try {
+                Log.d("HAKKE", "go parseJson");
+
                 parseJSon(res);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -84,12 +87,17 @@ public class DirectionFinder {
     }
 
     private void parseJSon(String data) throws JSONException {
+
+        Log.d("HAKKE", "data : " + data);
         if (data == null)
             return;
+        Log.d("HAKKE", "parseJSon starts!");
 
         List<Route> routes = new ArrayList<Route>();
         JSONObject jsonData = new JSONObject(data);
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");
+        Log.d("HAKKE","jsonRoutes.length:" + jsonRoutes.length());
+
         for (int i = 0; i < jsonRoutes.length(); i++) {
             JSONObject jsonRoute = jsonRoutes.getJSONObject(i);
             Route route = new Route();
@@ -109,7 +117,7 @@ public class DirectionFinder {
             route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
-
+            Log.d("HAKKE", "route details:> " + route);
             routes.add(route);
         }
 
