@@ -8,8 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -30,18 +28,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(toolbar);
 
 
+        //starting service..
+        Intent intent = new Intent(getBaseContext(), GPSService.class);
+        startActivity(intent);
+
         setup();
 
 
-        if(!isNetworkAvailable())
-        {
+        if (!isNetworkAvailable()) {
             //Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setIcon(android.R.drawable.ic_dialog_alert);
             builder.setTitle("Closing the App");
             builder.setMessage("No Internet Connection,check your settings");
-            builder.setPositiveButton("Close", new DialogInterface.OnClickListener()
-            {
+            builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     finish();
@@ -51,21 +51,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .show();
 
 
-        }
-        else
-        {
-            if(!checkGPS()) // gps is closing!
+        } else {
+            if (!checkGPS()) // gps is closing!
             {
                 openGPS();
-            }
-            else
-            {
-                Toast.makeText(this, "Internet And GPS is Activated ;)",Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Internet And GPS is Activated ;)", Toast.LENGTH_SHORT).show();
+                // ACTIVITY ÇALIŞMAYA HAZIR DURUMDA..
+
+
+
+
+
+
+
             }
 
         }
 
     }
+
     private void openGPS() {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -87,8 +92,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean checkGPS() {
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         boolean status = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        Log.d(TAG,"Current GPS status : " + status);
-        return  status;
+        Log.d(TAG, "Current GPS status : " + status);
+        return status;
     }
 
     private void setup() {
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (id) {
             case R.id.btnOpenMap:
-                    startActivity(new Intent(this,MapsActivity.class));
+                startActivity(new Intent(this, MapsActivity.class));
                 break;
             default:
                 break;
@@ -114,6 +119,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(getApplication().CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-        return  activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
