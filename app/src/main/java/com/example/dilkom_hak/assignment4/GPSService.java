@@ -56,13 +56,27 @@ public class GPSService extends Service {
                 Log.d("HAKKE", "onLocationChanged" + " Distance between Ikı Eylul and Current: " + distance);
 
                 if (distance <= 50) {
+
+                    //BURASI DEGISECEK
+                    Intent intent = new Intent();
+                    intent.putExtra("check_status",true);
+                    intent.setAction("detect_location_status");
+                    sendBroadcast(intent);
+
                     Log.d("HAKKE", "Welcome to iki eylül");
                     //eğer distance 50m den az ise,
                     //notification manager çalışacak ve telefona bildirim göndereceğiz...
 
                 }
+                else
+                {
+                    Intent intent = new Intent();
+                    intent.putExtra("check_status",false);
+                    intent.setAction("detect_location_status");
+                    sendBroadcast(intent);
+                }
 
-
+                Toast.makeText(GPSService.this, "GPS SERVICE: Curr Post: " + latitude+","+longitude, Toast.LENGTH_SHORT).show();
             }
 
             @Override

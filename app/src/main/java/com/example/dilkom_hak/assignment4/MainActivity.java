@@ -1,8 +1,10 @@
 package com.example.dilkom_hak.assignment4;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -27,10 +29,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //starting broadcast receiver
+        GPSReceiver gpsReceiver = new GPSReceiver();
+        IntentFilter intentFilter = new IntentFilter("detect_location_status");
+        registerReceiver(gpsReceiver,intentFilter);
+
 
         //starting service..
         Intent intent = new Intent(getBaseContext(), GPSService.class);
-        startActivity(intent);
+        startService(intent);
 
         setup();
 
