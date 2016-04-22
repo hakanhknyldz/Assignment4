@@ -49,7 +49,7 @@ public class GPSService extends Service {
 
                 Location ikiEylulLocation = new Location("ikiEylul");
                 ikiEylulLocation.setLatitude(ikiEylulLatitude);
-                ikiEylulLocation.setLongitude(ikiEylulLatitude);
+                ikiEylulLocation.setLongitude(ikiEylulLongitude);
 
                 float distance = ikiEylulLocation.distanceTo(currentLocation);
 
