@@ -54,29 +54,29 @@ public class GPSService extends Service {
                 float distance = ikiEylulLocation.distanceTo(currentLocation);
 
                 Log.d("HAKKE", "onLocationChanged" + " Distance between Ikı Eylul and Current: " + distance);
+                Intent statusIntent = new Intent();
+                if (distance <= 50)
+                {
 
-                if (distance <= 50) {
-
-                    //BURASI DEGISECEK
-                    Intent intent = new Intent();
-                    intent.putExtra("check_status",true);
-                    intent.setAction("detect_location_status");
-                    sendBroadcast(intent);
-
+                    statusIntent.putExtra("check_status", true);
                     Log.d("HAKKE", "Welcome to iki eylül");
                     //eğer distance 50m den az ise,
                     //notification manager çalışacak ve telefona bildirim göndereceğiz...
-
                 }
                 else
                 {
-                    Intent intent = new Intent();
-                    intent.putExtra("check_status",false);
-                    intent.setAction("detect_location_status");
-                    sendBroadcast(intent);
+                    statusIntent.putExtra("check_status", false);
                 }
+                //manifeste yaratmış oldugumuz
+                //custom receiverı uyandırma vakti geldi.
+                //lokasyona göre bilgiyi aldım boolean değeri atadık.
+                //status kontrol edilecek. eğer 50'den küçük eşitse broadcastReceiver ımız Notification yapıcak.
+                statusIntent.setAction("com.hakke.action.lokasyon_dinle");
+                sendBroadcast(statusIntent);
 
-                Toast.makeText(GPSService.this, "GPS SERVICE: Curr Post: " + latitude+","+longitude, Toast.LENGTH_SHORT).show();
+
+                Log.d("HAKKE","GPSSERVICE => Curr Post: " + latitude + "," + longitude + "Distance is now: " + distance );
+                Toast.makeText(GPSService.this, "GPS SERVICE: Curr Post: " + latitude + "," + longitude + "\n Distance is now: " + distance, Toast.LENGTH_SHORT).show();
             }
 
             @Override

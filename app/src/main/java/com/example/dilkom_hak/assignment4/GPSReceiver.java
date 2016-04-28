@@ -6,15 +6,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
+import android.widget.Toast;
 
 public class GPSReceiver extends BroadcastReceiver {
+    
     @Override
     public void onReceive(Context context, Intent intent) {
-
+        Log.d("HAKKE","GPS Receiver active");
         boolean status = intent.getBooleanExtra("check_status",false);
         //if status is true , notification manager is started..
-        //because, we are closing to target(this homework its Iki Eylul)
-
+        //because, we are closing to target(in this homework its Iki Eylul)
 
         if(status)
         {

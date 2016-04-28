@@ -42,7 +42,7 @@ import Modules.Route;
 //android key for maps api : AIzaSyAqsJXq-Ia-zbVqlhRIEfEMDFr7Egq-Is4
 
 //example route: https://maps.googleapis.com/maps/api/directions/json?origin=Eskisehir&destination=Bursa&key=AIzaSyApwxIXVb9XGS9FGCid8olKQ0ST_Uy865s
-//example video https://www.youtube.com/watch?v=CCZPUeY94MU
+
 public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallback, DirectionFinderListener {
 
     private static final String TAG = "HAKKE";

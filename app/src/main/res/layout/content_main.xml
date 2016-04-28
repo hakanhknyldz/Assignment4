@@ -22,6 +22,7 @@
         />
 
     <Switch
+        android:visibility="invisible"
         android:switchMinWidth="60dp"
         android:padding="20dp"
         android:text="USING NOTIFICATION"

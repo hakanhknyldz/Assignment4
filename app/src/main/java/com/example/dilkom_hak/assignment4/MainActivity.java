@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     NotificationManager notificationManager;
     boolean isNotificActive = false;
     int NotifID = 33;
-
+    GPSReceiver gpsReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,11 +42,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        /* broadcast i böyle çağırdığımızda activity sonlandığında hata alıyoruz.
+        servis gibi broadcastin de arkada sürekli çalışması lazım.
+        o yüzden manifesto'da receiver'ı tanımlıyoruz ve custom servisimiz oldugu için
+        kendi kafamızdan isim verdiğimiz action ı bu receiver a ekliyoruz.
+
+        BroadcastReceiver kısaca:
+        android sistemi her olay gerçekleştiğinde bir yayın yayınlar ya da kendi servislerimizle
+        bir olay gerçekleştirip sendBroadCast dediğimizdede bir yayın açmış oluruz.
+        o yayından bilgileri alabilmek için broadcastReceiver kullanırız.
+
         //starting broadcast receiver
-        GPSReceiver gpsReceiver = new GPSReceiver();
+        gpsReceiver = new GPSReceiver();
         IntentFilter intentFilter = new IntentFilter("detect_location_status");
         registerReceiver(gpsReceiver, intentFilter);
-
+        */
 
         //starting service..
         Intent intent = new Intent(getBaseContext(), GPSService.class);
@@ -126,8 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     switchNotification.setText("Switch is currently ON");
 
                     createNotification();
-                }
-                else //notification inactive!
+                } else //notification inactive!
                 {
                     cancelNotification();
                     switchNotification.setText("Switch is currently OFF");
@@ -138,21 +147,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void cancelNotification() {
-        if(isNotificActive)
-        {
+        if (isNotificActive) {
             notificationManager.cancel(NotifID);
         }
     }
 
-    private void createNotification()
-    {
+    private void createNotification() {
         android.support.v4.app.NotificationCompat.Builder notificBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle("Are you around?")
                 .setContentText("Do not forget to visit us!")
                 .setTicker("Assignment 4")
                 .setSmallIcon(R.drawable.ic_alert_map);
 
-        Intent goIntent = new Intent(this,MapsActivity.class);
+        Intent goIntent = new Intent(this, MapsActivity.class);
 
 
         TaskStackBuilder tStackBuilder = TaskStackBuilder.create(this);
@@ -161,31 +168,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         tStackBuilder.addNextIntent(goIntent);
 
-        PendingIntent pendingIntent = tStackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = tStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificBuilder.setContentIntent(pendingIntent);
 
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(NotifID,notificBuilder.build());
+        notificationManager.notify(NotifID, notificBuilder.build());
 
         isNotificActive = true;
     }
 
-    public void SetAlarm()
-    {
+    public void SetAlarm() {
         Long alertTime = new GregorianCalendar().getTimeInMillis() + 5 * 1000;
 
-        Intent alertIntent = new Intent(this,GPSReceiver.class);
+        Intent alertIntent = new Intent(this, GPSReceiver.class);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-        alarmManager.set(AlarmManager.RTC_WAKEUP, alertTime , PendingIntent.getBroadcast(this,1,alertIntent,PendingIntent.FLAG_UPDATE_CURRENT));
-
+        alarmManager.set(AlarmManager.RTC_WAKEUP, alertTime, PendingIntent.getBroadcast(this, 1, alertIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
 
     }
-
 
 
     @Override
